@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "monitor.fullname" . }}
+  labels:
+    {{- include "monitor.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "monitor.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: {{ .Values.service.port | quote }}
+        metric_path: "/metrics"
+      {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "monitor.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "monitor.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      hostAliases:
+      - ip: "10.1.1.15"
+        hostnames:
+        - "nfs15"
+      - ip: "10.1.1.16"
+        hostnames:
+        - "nfs16"
+      - ip: "10.1.1.17"
+        hostnames:
+        - "nfs17"
+      - ip: "10.1.1.18"
+        hostnames:
+        - "nfs18"
+      - ip: "10.1.1.107"
+        hostnames:
+        - "nfs107"
+      - ip: "10.1.1.108"
+        hostnames:
+        - "nfs108"
+      - ip: "10.1.1.109"
+        hostnames:
+        - "nfs109"
+      - ip: "10.1.1.110"
+        hostnames:
+        - "nfs110"
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            {{- toYaml .Values.volumeMounts | default "" | nindent 12 }}
+          env:
+            {{- range $key, $value := .Values.env }}
+            - name: {{ $key }}
+              value: {{ $value | quote }}
+            {{- end }}
+          ports:
+            - name: prometheus
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          resources:
+              {{- toYaml .Values.resources | nindent 12 }}
+      # dnsPolicy: "None"
+      # dnsConfig:
+      #   nameservers:
+      #     - 8.8.8.8
+      volumes:
+        {{- toYaml .Values.volumes | default "" | nindent 8 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

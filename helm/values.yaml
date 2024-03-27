@@ -1,0 +1,143 @@
+# Default values for monitor.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: artifactory.company.com/docker-dev-local/tools/monitor
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "1.0"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+env:
+  NFS_SERVERS: '[ "10.1.1.15","10.1.1.16","10.1.1.17","10.1.1.18","10.1.1.107","10.1.1.108","10.1.1.109","10.1.1.110" ]'
+  LOG_LEVEL: INFO
+  NFS_WAIT_TIME: 30
+  AF_SERVER_01: artifactory-01.company.com
+  AF_SERVER_02: artifactory-02.company.com
+  MOUNT_POINT: "/data/product"
+
+volumes:
+  - name: storage-15
+    nfs:
+      server: 10.1.1.15
+      path: /data/transfer/product
+  - name: storage-16
+    nfs:
+      server: 10.1.1.16
+      path: /data/transfer/product
+  - name: storage-17
+    nfs:
+      server: 10.1.1.17
+      path: /data/transfer/product
+  - name: storage-18
+    nfs:
+      server: 10.1.1.18
+      path: /data/transfer/product
+  - name: storage-107
+    nfs:
+      server: 10.1.1.107
+      path: /data/transfer/product
+  - name: storage-108
+    nfs:
+      server: 10.1.1.108
+      path: /data/transfer/product
+  - name: storage-109
+    nfs:
+      server: 10.1.1.109
+      path: /data/transfer/product
+  - name: storage-110
+    nfs:
+      server: 10.1.1.110
+      path: /data/transfer/product
+
+volumeMounts:
+  - name: storage-15
+    mountPath: /data/product/10.1.1.15
+  - name: storage-16
+    mountPath: /data/product/10.1.1.16
+  - name: storage-17
+    mountPath: /data/product/10.1.1.17
+  - name: storage-18
+    mountPath: /data/product/10.1.1.18
+  - name: storage-107
+    mountPath: /data/product/10.1.1.107
+  - name: storage-108
+    mountPath: /data/product/10.1.1.108
+  - name: storage-109
+    mountPath: /data/product/10.1.1.109
+  - name: storage-110
+    mountPath: /data/product/10.1.1.110
+
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 8000
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  limits:
+    cpu: 2
+    memory: 4Gi
+  requests:
+    cpu: 1
+    memory: 2Gi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
